@@ -114,29 +114,61 @@ Oczekiwane wyniki:
 
 **TYLKO dla środowiska DEV/STAGING!**
 
-1. Utwórz użytkownika testowego:
-   - Przejdź do **Authentication** → **Users**
-   - Kliknij **Add user** → **Create new user**
-   - Email: `test@example.com`
-   - Password: Ustaw testowe hasło
-   - Kliknij **Create user**
-   - Skopiuj UUID użytkownika z listy
+### Krok 6.1: Utwórz użytkownika testowego
 
-2. Zaktualizuj `supabase/migrations/002_seed_data.sql`:
+1. Przejdź do **Authentication** → **Users**
+2. Kliknij **Add user** → **Create new user**
+3. Wypełnij:
+   - **Email**: `test@example.com`
+   - **Password**: Ustaw testowe hasło (min. 6 znaków)
+   - **Auto Confirm User**: ✅ Zaznacz (ważne dla testów!)
+4. Kliknij **Create user**
+5. **Skopiuj UUID użytkownika** z listy (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+
+### Krok 6.2: Ręcznie utwórz profil użytkownika
+
+**WAŻNE**: Ze względu na ograniczenia Supabase, profil nie tworzy się automatycznie. Musisz go utworzyć ręcznie:
+
+1. Przejdź do **SQL Editor**
+2. Uruchom następujące query (zamień UUID na skopiowany):
+
+```sql
+-- Zamień UUID na skopiowane w kroku 6.1
+INSERT INTO public.profiles (user_id, created_at, updated_at)
+VALUES (
+    'WKLEJ-TUTAJ-UUID-UŻYTKOWNIKA',  -- ← ZMIEŃ!
+    NOW(),
+    NOW()
+);
+
+-- Sprawdź czy profil został utworzony
+SELECT * FROM profiles WHERE user_id = 'WKLEJ-TUTAJ-UUID-UŻYTKOWNIKA';
+```
+
+**Wyjaśnienie**: Supabase nie pozwala na tworzenie triggerów na tabeli `auth.users`, więc profil musi być utworzony ręcznie lub w kodzie aplikacji. Zobacz `.ai/troubleshooting-profile-creation.md` dla szczegółów.
+
+### Krok 6.3: Załaduj przykładowe dane
+
+1. Zaktualizuj `supabase/migrations/002_seed_data.sql`:
    - Znajdź wszystkie wystąpienia `00000000-0000-0000-0000-000000000001`
-   - Zamień na skopiowany UUID użytkownika
+   - Zamień na UUID skopiowany w kroku 6.1
 
-3. Uruchom seed data w SQL Editor:
-   - Skopiuj zawartość `002_seed_data.sql`
+2. Uruchom seed data w SQL Editor:
+   - Skopiuj całą zawartość `002_seed_data.sql`
    - Wklej do SQL Editor
    - Kliknij **Run**
 
-4. Weryfikuj dane testowe:
+3. Weryfikuj dane testowe:
 ```sql
 SELECT * FROM profiles;
 SELECT * FROM flashcards;
 SELECT * FROM generation_sessions;
 ```
+
+**Oczekiwane wyniki**:
+- 1 profil użytkownika testowego
+- 7 fiszek (4 AI-generated, 3 manual)
+- 2 sesje generowania
 
 ## 🧾 Krok 7: Test funkcji bazy danych
 
@@ -228,50 +260,45 @@ SELECT auth.uid(); -- Powinno zwrócić UUID, nie NULL
 ```
 3. Jeśli NULL, zaloguj się ponownie
 
-### Problem: Trigger `on_auth_user_created` nie działa
+### Problem: "Failed to create user: Database error creating new user"
 
-**Przyczyna**: Supabase może wymagać webhooków zamiast triggerów na `auth.users`
+**Przyczyna**: Trigger `on_auth_user_created` próbował się podpiąć pod `auth.users`, ale Supabase tego nie pozwala w zwykłych migracjach SQL.
 
-**Rozwiązanie A - Webhook (zalecane)**:
-1. Przejdź do **Database** → **Webhooks**
-2. Kliknij **Create a new hook**
-3. Skonfiguruj:
-   - **Table**: `auth.users`
-   - **Events**: `INSERT`
-   - **Type**: `HTTP Request`
-   - **URL**: Twój endpoint API do tworzenia profilu
+**Status**: ✅ Trigger został wyłączony w najnowszej wersji migracji (zakomentowany)
 
-**Rozwiązanie B - Kod aplikacji**:
-Utwórz profil w kodzie po rejestracji:
+**Rozwiązanie dla testów (DEV/STAGING)**:
+1. Utwórz użytkownika przez Dashboard (Authentication → Users → Add user)
+2. Ręcznie utwórz profil przez SQL Editor:
+```sql
+INSERT INTO public.profiles (user_id, created_at, updated_at)
+VALUES ('UUID-UŻYTKOWNIKA', NOW(), NOW());
+```
+Zobacz szczegółowe instrukcje w **Krok 6.2** powyżej.
+
+**Rozwiązanie dla produkcji**:
+Twórz profil automatycznie w kodzie aplikacji po rejestracji:
 ```typescript
-// Po pomyślnej rejestracji
+// API endpoint: src/pages/api/auth/signup.ts
 const { data: authData } = await supabase.auth.signUp({
   email, password
 });
 
 if (authData.user) {
-  // Ręcznie utwórz profil
+  // Automatycznie utwórz profil
   await supabase.from('profiles').insert({
     user_id: authData.user.id
   });
 }
 ```
 
-### Problem: "relation auth.users does not exist"
-
-**Przyczyna**: Trigger próbuje odwoływać się do `auth.users` bezpośrednio
-
-**Rozwiązanie**: Usuń trigger i użyj rozwiązania B z poprzedniego punktu:
-```sql
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-```
+**Szczegółowe rozwiązania i przykłady kodu**: Zobacz `.ai/troubleshooting-profile-creation.md`
 
 ### Problem: Wolne zapytania
 
 **Przyczyna**: Brak indeksów lub dużo danych
 
 **Rozwiązanie**:
-1. Sprawdź czy indeksy zostały utworzone:
+1. Sprawdź czy indeksy zostały utworzone (powinno być ~7 indeksów):
 ```sql
 SELECT indexname, tablename 
 FROM pg_indexes 
@@ -284,7 +311,14 @@ EXPLAIN ANALYZE
 SELECT * FROM flashcards 
 WHERE user_id = 'some-uuid' 
   AND next_review_date <= NOW();
+-- Powinien używać idx_flashcards_next_review_date
 ```
+
+### Problem: "functions in index predicate must be marked IMMUTABLE"
+
+**Przyczyna**: Ten błąd występował w starszej wersji migracji z partial index używającym `NOW()`
+
+**Rozwiązanie**: Upewnij się, że używasz najnowszej wersji `001_init_schema.sql`. Partial index został usunięty i zastąpiony zwykłym composite index, który jest wystarczający.
 
 ## 📚 Dodatkowe zasoby
 

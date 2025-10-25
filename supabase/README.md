@@ -22,8 +22,9 @@ Główna migracja zawierająca kompletny schemat bazy danych:
 - **Tabele**: `profiles`, `flashcards`, `generation_sessions`
 - **Foreign Keys**: Relacje między tabelami z CASCADE
 - **Funkcje**: 7 funkcji (SM-2, statystyki, triggery)
-- **Triggers**: Auto-update timestamps, auto-create profile, statystyki
-- **Indeksy**: Optymalizacja wydajności zapytań
+- **Triggers**: Auto-update timestamps, statystyki
+  - ⚠️ Trigger auto-create profile został wyłączony (Supabase nie pozwala na triggery na auth.users)
+- **Indeksy**: 7 indeksów optymalizujących wydajność zapytań
 - **RLS Policies**: Bezpieczeństwo na poziomie wierszy
 - **Komentarze**: Dokumentacja w bazie danych
 
@@ -137,9 +138,15 @@ DROP FUNCTION IF EXISTS update_profile_stats_on_source_change CASCADE;
 
 ## Troubleshooting
 
-### Problem: Trigger `on_auth_user_created` nie działa
+### Problem: "Failed to create user: Database error creating new user"
 
-**Rozwiązanie**: Supabase może wymagać Database Webhooks zamiast bezpośredniego triggera na `auth.users`. Alternatywnie, twórz profil w kodzie aplikacji po rejestracji.
+**Przyczyna**: Trigger `on_auth_user_created` został wyłączony, ponieważ Supabase nie pozwala na bezpośrednie triggery na `auth.users`.
+
+**Rozwiązanie**: 
+- **Dla testów**: Ręcznie twórz profile przez SQL Editor po utworzeniu użytkownika
+- **Dla produkcji**: Twórz profile w kodzie aplikacji po rejestracji
+
+Szczegółowe instrukcje: `.ai/troubleshooting-profile-creation.md`
 
 ### Problem: RLS blokuje wszystkie zapytania
 

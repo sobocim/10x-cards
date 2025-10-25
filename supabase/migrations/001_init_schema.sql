@@ -123,6 +123,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function: Auto-create profile for new user
+-- NOTE: This function exists for reference, but the trigger on auth.users
+-- cannot be created through SQL migrations due to Supabase Auth restrictions.
+-- Profiles should be created manually after user signup in application code.
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -338,10 +341,16 @@ $$ LANGUAGE plpgsql SECURITY INVOKER;
 -- ============================================================================
 
 -- Trigger: Auto-create profile for new user (on auth.users)
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW
-    EXECUTE FUNCTION handle_new_user();
+-- NOTE: This trigger CANNOT be created through SQL migrations due to Supabase restrictions.
+-- Supabase does not allow direct triggers on auth.users table.
+-- Instead, create profiles in application code after signup, or use Supabase Database Webhooks.
+-- See: .ai/troubleshooting-profile-creation.md for details
+
+-- COMMENTED OUT - Does not work:
+-- CREATE TRIGGER on_auth_user_created
+--     AFTER INSERT ON auth.users
+--     FOR EACH ROW
+--     EXECUTE FUNCTION handle_new_user();
 
 -- Trigger: Auto-update updated_at on profiles
 CREATE TRIGGER set_updated_at_profiles
@@ -387,10 +396,9 @@ CREATE INDEX idx_flashcards_next_review_date ON flashcards(next_review_date, use
 CREATE INDEX idx_flashcards_created_at ON flashcards(user_id, created_at DESC);
 CREATE INDEX idx_flashcards_source ON flashcards(user_id, source);
 
--- Partial index for cards due for review (performance optimization)
-CREATE INDEX idx_flashcards_due_review 
-    ON flashcards(user_id, next_review_date) 
-    WHERE next_review_date <= NOW();
+-- Note: Partial index with NOW() is not possible (NOW() is VOLATILE, not IMMUTABLE)
+-- The composite index idx_flashcards_next_review_date is sufficient for queries
+-- that filter by next_review_date <= NOW()
 
 -- Generation sessions indexes
 CREATE INDEX idx_generation_sessions_user_id ON generation_sessions(user_id, created_at DESC);

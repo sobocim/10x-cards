@@ -88,11 +88,13 @@ erDiagram
 **RLS Policies**:
 - SELECT: Użytkownik może widzieć tylko własny profil
 - UPDATE: Użytkownik może aktualizować tylko własny profil
-- INSERT: Auto-utworzenie przez trigger przy rejestracji
+- INSERT: Użytkownik może utworzyć własny profil
 
 **Triggers**:
 - Auto-update `updated_at` przy UPDATE
-- Auto-create profile przy tworzeniu nowego użytkownika w `auth.users`
+
+**Uwaga o auto-tworzeniu profili**: 
+Trigger automatycznego tworzenia profilu przy rejestracji został wyłączony, ponieważ Supabase nie pozwala na bezpośrednie triggery na `auth.users`. Profile muszą być tworzone ręcznie (testy) lub w kodzie aplikacji (produkcja). Zobacz `.ai/troubleshooting-profile-creation.md`.
 
 ---
 
@@ -136,7 +138,6 @@ erDiagram
 - `idx_flashcards_next_review_date` ON (next_review_date, user_id)
 - `idx_flashcards_created_at` ON (user_id, created_at DESC)
 - `idx_flashcards_source` ON (user_id, source)
-- `idx_flashcards_due_review` (partial) ON (user_id, next_review_date) WHERE next_review_date <= NOW()
 
 ---
 
@@ -304,20 +305,24 @@ CREATE POLICY "Users cannot update sessions"
 ### Strategia indeksowania:
 
 1. **Primary queries**: Indeksy na `user_id` dla wszystkich tabel
-2. **Review queries**: Composite index na `(user_id, next_review_date)`
+2. **Review queries**: Composite index na `(next_review_date, user_id)`
 3. **List queries**: Composite index na `(user_id, created_at DESC)`
-4. **Analytics queries**: Partial index dla fiszek zaległych
+4. **Statistics queries**: Index na `(user_id, source)` dla analizy AI vs manual
 5. **Full-text search**: GIN index na `input_text` (opcjonalnie)
 
-### Partial indexes:
+### Uwaga o partial indexes:
+
+Pierwotnie planowano partial index z warunkiem `WHERE next_review_date <= NOW()`, ale PostgreSQL nie pozwala na użycie funkcji VOLATILE (jak `NOW()`) w partial index predicate. 
+
+Zamiast tego używamy composite index `idx_flashcards_next_review_date ON (next_review_date, user_id)`, który jest wystarczająco wydajny dla zapytań typu:
 
 ```sql
-CREATE INDEX idx_flashcards_due_review 
-    ON flashcards(user_id, next_review_date) 
-    WHERE next_review_date <= NOW();
+SELECT * FROM flashcards 
+WHERE user_id = ? AND next_review_date <= NOW()
+ORDER BY next_review_date ASC;
 ```
 
-Zmniejsza rozmiar indeksu, przyspieszając zapytania o fiszki do powtórki.
+PostgreSQL skutecznie używa tego indeksu przy filtrach czasowych.
 
 ---
 
