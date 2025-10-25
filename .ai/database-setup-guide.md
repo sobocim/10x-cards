@@ -320,6 +320,15 @@ WHERE user_id = 'some-uuid'
 
 **Rozwiązanie**: Upewnij się, że używasz najnowszej wersji `001_init_schema.sql`. Partial index został usunięty i zastąpiony zwykłym composite index, który jest wystarczający.
 
+### Problem: "new row violates check constraint generation_sessions_input_text_check"
+
+**Przyczyna**: Teksty w seed data są za krótkie (< 1000 znaków). Constraint wymaga 1000-10000 znaków zgodnie z US-003.
+
+**Rozwiązanie**: 
+1. Upewnij się, że używasz **najnowszej wersji** `002_seed_data.sql` z zaktualizowanymi tekstami
+2. Teksty zostały wydłużone do >1000 znaków
+3. Zobacz szczegóły w `.ai/troubleshooting-seed-data.md`
+
 ## 📚 Dodatkowe zasoby
 
 - **Dokumentacja schematu**: `.ai/database-schema.md`

@@ -41,7 +41,10 @@ Opcjonalne dane testowe dla środowisk dev/staging:
 
 **UWAGA**: ⚠️ **NIE URUCHAMIAĆ NA PRODUKCJI!**
 
-Przed uruchomieniem zamień `00000000-0000-0000-0000-000000000001` na rzeczywisty UUID użytkownika testowego.
+Przed uruchomieniem:
+1. Zamień UUID użytkownika na rzeczywisty UUID z twojego projektu
+2. Upewnij się, że profil użytkownika został utworzony ręcznie (patrz troubleshooting)
+3. Teksty w `input_text` mają min. 1000 znaków (już zaktualizowane)
 
 ## Jak uruchomić migracje
 
@@ -163,6 +166,12 @@ SELECT auth.uid(); -- Powinno zwrócić UUID, nie NULL
 ```sql
 SELECT id, email FROM auth.users LIMIT 5;
 ```
+
+### Problem: "new row violates check constraint generation_sessions_input_text_check"
+
+**Przyczyna**: Teksty `input_text` w seed data są za krótkie (< 1000 znaków).
+
+**Rozwiązanie**: Użyj najnowszej wersji `002_seed_data.sql` z zaktualizowanymi tekstami (>1000 znaków). Zobacz `.ai/troubleshooting-seed-data.md` dla szczegółów.
 
 ## Następne kroki
 

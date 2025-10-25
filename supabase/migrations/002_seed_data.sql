@@ -22,7 +22,7 @@
 -- ============================================================================
 
 -- Example: Verify or insert test user profile
--- Replace '00000000-0000-0000-0000-000000000001' with actual test user UUID
+-- Replace '0536cb41-25e3-4618-80ce-0be081b3e90d' with actual test user UUID
 INSERT INTO profiles (
     user_id,
     display_name,
@@ -33,8 +33,8 @@ INSERT INTO profiles (
     created_at,
     updated_at
 ) VALUES (
-    '00000000-0000-0000-0000-000000000001',
-    'Test User',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    'Sobocim.org Test User',
     0, -- Will be updated by triggers
     0, -- Will be updated by triggers
     2,
@@ -63,8 +63,8 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000001',
-    'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance. It uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. PostgreSQL comes with many features aimed to help developers build applications, administrators to protect data integrity and build fault-tolerant environments, and help you manage your data no matter how big or small the dataset. In addition to being free and open source, PostgreSQL is highly extensible. For example, you can define your own data types, build out custom functions, even write code from different programming languages without recompiling your database! PostgreSQL has been proven to be highly scalable both in the sheer quantity of data it can manage and in the number of concurrent users it can accommodate.',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance. It uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. PostgreSQL comes with many features aimed to help developers build applications, administrators to protect data integrity and build fault-tolerant environments, and help you manage your data no matter how big or small the dataset. In addition to being free and open source, PostgreSQL is highly extensible. For example, you can define your own data types, build out custom functions, even write code from different programming languages without recompiling your database! PostgreSQL has been proven to be highly scalable both in the sheer quantity of data it can manage and in the number of concurrent users it can accommodate. This is PostgreSQL,this is PostgreSQL, this is PostgreSQL',
     5,
     4,
     1,
@@ -92,8 +92,8 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000001',
-    'React is a JavaScript library for building user interfaces. It is maintained by Meta and a community of individual developers and companies. React can be used as a base in the development of single-page, mobile, or server-rendered applications with frameworks like Next.js. However, React is only concerned with the user interface and rendering components to the DOM, so React applications often rely on libraries for routing and other client-side functionality. A key advantage of React is that it only re-renders the parts of the interface that have changed. This is done through a virtual DOM - a lightweight copy of the actual DOM. When state changes in a React component, React updates the virtual DOM and compares it with the previous version to determine what has changed. It then updates only those parts of the real DOM that need to be updated.',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    'React is a JavaScript library for building user interfaces. It is maintained by Meta and a community of individual developers and companies. React can be used as a base in the development of single-page, mobile, or server-rendered applications with frameworks like Next.js. However, React is only concerned with the user interface and rendering components to the DOM, so React applications often rely on libraries for routing and other client-side functionality. A key advantage of React is that it only re-renders the parts of the interface that have changed. This is done through a virtual DOM - a lightweight copy of the actual DOM. When state changes in a React component, React updates the virtual DOM and compares it with the previous version to determine what has changed. It then updates only those parts of the real DOM that need to be updated. This is React, this is React, this is React,  This is React, this is React, this is React,This is React, this is React, this is React, This is React, this is React, this is React,   ',
     0,
     0,
     0,
@@ -127,7 +127,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     '10000000-0000-0000-0000-000000000001',
     'What is PostgreSQL?',
     'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development, known for reliability, feature robustness, and performance.',
@@ -142,7 +142,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     '10000000-0000-0000-0000-000000000001',
     'What language does PostgreSQL use?',
     'PostgreSQL uses and extends the SQL language combined with many features that safely store and scale complicated data workloads.',
@@ -157,7 +157,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000003',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     '10000000-0000-0000-0000-000000000001',
     'Is PostgreSQL free and open source?',
     'Yes, PostgreSQL is free and open source. It is also highly extensible, allowing developers to define custom data types, functions, and write code from different programming languages.',
@@ -172,7 +172,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000004',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     '10000000-0000-0000-0000-000000000001',
     'What are the main benefits of PostgreSQL for developers?',
     'PostgreSQL helps developers build applications, administrators protect data integrity and build fault-tolerant environments, and manage data regardless of dataset size.',
@@ -204,7 +204,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000005',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     NULL,
     'What is the capital of France?',
     'Paris',
@@ -219,7 +219,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000006',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     NULL,
     'What is 2 + 2?',
     '4',
@@ -234,7 +234,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000007',
-    '00000000-0000-0000-0000-000000000001',
+    '0536cb41-25e3-4618-80ce-0be081b3e90d',
     NULL,
     'What does HTML stand for?',
     'HyperText Markup Language',
@@ -257,8 +257,8 @@ INSERT INTO flashcards (
 -- SELECT COUNT(*) as profile_count FROM profiles;
 -- SELECT COUNT(*) as flashcard_count FROM flashcards;
 -- SELECT COUNT(*) as session_count FROM generation_sessions;
--- SELECT * FROM get_user_stats('00000000-0000-0000-0000-000000000001');
--- SELECT * FROM get_cards_due_for_review('00000000-0000-0000-0000-000000000001', 10);
+-- SELECT * FROM get_user_stats('0536cb41-25e3-4618-80ce-0be081b3e90d');
+-- SELECT * FROM get_cards_due_for_review('0536cb41-25e3-4618-80ce-0be081b3e90d', 10);
 
 -- ============================================================================
 -- END OF SEED DATA

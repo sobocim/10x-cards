@@ -73,7 +73,7 @@ CREATE TABLE generation_sessions (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     
     -- Constraints
-    CONSTRAINT generation_sessions_input_text_check CHECK (LENGTH(input_text) >= 1000 AND LENGTH(input_text) <= 10000),
+    CONSTRAINT generation_sessions_input_text_check CHECK (LENGTH(input_text) >= 100 AND LENGTH(input_text) <= 10000),
     CONSTRAINT generation_sessions_accepted_count_check CHECK (accepted_count <= generated_count),
     CONSTRAINT generation_sessions_counts_check CHECK (accepted_count + rejected_count <= generated_count)
 );
