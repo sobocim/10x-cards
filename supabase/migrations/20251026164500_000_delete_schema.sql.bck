@@ -1,0 +1,127 @@
+-- ============================================================================
+-- Delete 10x-cards Database Schema
+-- Version: 000
+-- Description: Removes entire database schema (for clean reinstall)
+-- Created: 2025-10-26
+-- WARNING: This will DELETE ALL DATA! Use with caution!
+-- ============================================================================
+
+-- This script removes all objects created by 001_init_schema.sql
+-- Execute this only if you need to completely reset the database schema.
+
+-- ============================================================================
+-- 1. DROP RLS POLICIES
+-- ============================================================================
+
+-- Profiles policies
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+
+-- Flashcards policies
+DROP POLICY IF EXISTS "Users can view own flashcards" ON flashcards;
+DROP POLICY IF EXISTS "Users can insert own flashcards" ON flashcards;
+DROP POLICY IF EXISTS "Users can update own flashcards" ON flashcards;
+DROP POLICY IF EXISTS "Users can delete own flashcards" ON flashcards;
+
+-- Generation sessions policies
+DROP POLICY IF EXISTS "Users can view own sessions" ON generation_sessions;
+DROP POLICY IF EXISTS "Users can insert own sessions" ON generation_sessions;
+DROP POLICY IF EXISTS "Users cannot update sessions" ON generation_sessions;
+DROP POLICY IF EXISTS "Users cannot delete sessions" ON generation_sessions;
+
+-- ============================================================================
+-- 2. DROP TRIGGERS
+-- ============================================================================
+
+DROP TRIGGER IF EXISTS set_updated_at_profiles ON profiles;
+DROP TRIGGER IF EXISTS set_updated_at_flashcards ON flashcards;
+DROP TRIGGER IF EXISTS update_stats_after_insert ON flashcards;
+DROP TRIGGER IF EXISTS update_stats_after_delete ON flashcards;
+DROP TRIGGER IF EXISTS update_stats_on_source_change ON flashcards;
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- ============================================================================
+-- 3. DROP INDEXES
+-- ============================================================================
+
+-- Profiles indexes
+DROP INDEX IF EXISTS idx_profiles_user_id;
+
+-- Flashcards indexes
+DROP INDEX IF EXISTS idx_flashcards_user_id;
+DROP INDEX IF EXISTS idx_flashcards_next_review_date;
+DROP INDEX IF EXISTS idx_flashcards_created_at;
+DROP INDEX IF EXISTS idx_flashcards_source;
+
+-- Generation sessions indexes
+DROP INDEX IF EXISTS idx_generation_sessions_user_id;
+DROP INDEX IF EXISTS idx_generation_sessions_input_text;
+
+-- ============================================================================
+-- 4. DROP TABLES (CASCADE removes all foreign keys and constraints)
+-- ============================================================================
+
+DROP TABLE IF EXISTS flashcards CASCADE;
+DROP TABLE IF EXISTS generation_sessions CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+
+-- ============================================================================
+-- 5. DROP FUNCTIONS
+-- ============================================================================
+
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS update_profile_stats() CASCADE;
+DROP FUNCTION IF EXISTS update_profile_stats_on_source_change() CASCADE;
+DROP FUNCTION IF EXISTS update_card_review(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_cards_due_for_review(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_user_stats(UUID) CASCADE;
+
+-- ============================================================================
+-- 6. DROP ENUM TYPES
+-- ============================================================================
+
+DROP TYPE IF EXISTS flashcard_source CASCADE;
+DROP TYPE IF EXISTS generation_status CASCADE;
+
+-- ============================================================================
+-- VERIFICATION QUERIES (Optional - uncomment to verify deletion)
+-- ============================================================================
+
+-- Verify tables are gone
+-- SELECT table_name 
+-- FROM information_schema.tables 
+-- WHERE table_schema = 'public' 
+-- AND table_name IN ('profiles', 'flashcards', 'generation_sessions');
+
+-- Verify functions are gone
+-- SELECT routine_name 
+-- FROM information_schema.routines 
+-- WHERE routine_schema = 'public' 
+-- AND routine_name IN (
+--     'update_updated_at_column',
+--     'handle_new_user',
+--     'update_profile_stats',
+--     'update_profile_stats_on_source_change',
+--     'update_card_review',
+--     'get_cards_due_for_review',
+--     'get_user_stats'
+-- );
+
+-- Verify types are gone
+-- SELECT typname 
+-- FROM pg_type 
+-- WHERE typname IN ('flashcard_source', 'generation_status');
+
+-- ============================================================================
+-- END OF DELETION SCRIPT
+-- ============================================================================
+
+-- To reinstall the schema after running this script:
+-- 1. Run: npx supabase db reset
+-- OR
+-- 2. Run the migration files in order:
+--    - 20251026164500_001_init_schema.sql
+--    - 20251026200600_remove_next_review_date_constraint.sql
+

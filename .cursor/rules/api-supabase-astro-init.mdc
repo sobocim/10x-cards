@@ -1,68 +1,136 @@
 ---
-description: 
+description: Supabase integration setup for 10xCards Astro project
 globs: 
 alwaysApply: false
 ---
-# Supabase Astro Initialization
+# Supabase Astro Integration - 10xCards
 
-This document provides a reproducible guide to create the necessary file structure for integrating Supabase with your Astro project.
+This document provides a reproducible guide for the Supabase integration structure used in the 10xCards project.
 
 ## Prerequisites
 
-- Your project should use Astro 5, TypeScript 5, React 19, and Tailwind 4.
-- Install the `@supabase/supabase-js` package.
-- Ensure that `/supabase/config.toml` exists
-- Ensure that a file `/src/db/database.types.ts` exists and contains the correct type definitions for your database.
+- Your project should use Astro 5, TypeScript 5, React 19, and Tailwind 4
+- Install the `@supabase/supabase-js` package (version ^2.76.1 or higher)
+- Ensure that `/supabase/config.toml` exists (created by `supabase init` or manually)
+- Ensure that `/src/db/types.ts` exists and contains the correct Database type definitions
+- Docker Desktop must be installed and running (for local Supabase)
 
-IMPORTANT: Check prerequisites before perfoming actions below. If they're not met, stop and ask a user for the fix.
+IMPORTANT: Check prerequisites before performing actions below. If they're not met, stop and ask the user for the fix.
 
 ## File Structure and Setup
 
-### 1. Supabase Client Initialization
+### 1. Supabase Client (`/src/db/supabase.ts`)
 
-Create the file `/src/db/supabase.client.ts` with the following content:
+Create the file `/src/db/supabase.ts` with the following structure:
 
 ```ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 
-import type { Database } from '../db/database.types.ts';
+// Environment variables
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+// Validation
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    "Missing Supabase environment variables. Please add PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY to your .env file."
+  );
+}
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Main Supabase client with database types
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
+
+// Helper: Create client with custom auth token
+export function createServerSupabaseClient(accessToken: string) {
+  return createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    auth: {
+      persistSession: false,
+    },
+  });
+}
+
+// Helper: Get current user
+export async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+  return user;
+}
+
+// Type-safe table accessors
+export const profilesTable = () => supabase.from("profiles");
+export const flashcardsTable = () => supabase.from("flashcards");
+export const generationSessionsTable = () => supabase.from("generation_sessions");
+
+// Type-safe RPC function callers
+export async function updateCardReview(cardId: string, quality: 0 | 1 | 2 | 3 | 4 | 5) {
+  return await supabase.rpc("update_card_review", {
+    card_uuid: cardId,
+    quality,
+  });
+}
+
+export default supabase;
 ```
 
-This file initializes the Supabase client using the environment variables `SUPABASE_URL` and `SUPABASE_KEY`.
+**Key features:**
+- Environment variable validation
+- Type-safe client with `Database` types
+- Helper functions for common operations
+- Type-safe table and RPC accessors
+- Server-side client creation with custom tokens
 
 
-### 2. Middleware Setup
+### 2. Middleware (`/src/middleware/index.ts`)
 
-Create the file `/src/middleware/index.ts` with the following content:
+Create the file `/src/middleware/index.ts`:
 
 ```ts
 import { defineMiddleware } from 'astro:middleware';
-
-import { supabaseClient } from '../db/supabase.client.ts';
+import { supabase } from '../db/supabase';
 
 export const onRequest = defineMiddleware((context, next) => {
-  context.locals.supabase = supabaseClient;
+  // Add Supabase client to context.locals
+  context.locals.supabase = supabase;
   return next();
 });
 ```
 
-This middleware adds the Supabase client to the Astro context locals, making it available throughout your application.
+**Purpose:** Makes the Supabase client available throughout your application via `context.locals.supabase` in:
+- Astro pages (server-side)
+- API routes
+- Server-side components
+
+**Usage in Astro pages/API routes:**
+```ts
+const { supabase } = Astro.locals;
+const { data, error } = await supabase.from('profiles').select('*');
+```
 
 
-### 3. TypeScript Environment Definitions
+### 3. TypeScript Definitions (`/src/env.d.ts`)
 
-Create the file `src/env.d.ts` with the following content:
+Create the file `/src/env.d.ts`:
 
 ```ts
 /// <reference types="astro/client" />
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './db/database.types.ts';
+import type { Database } from './db/types';
 
 declare global {
   namespace App {
@@ -73,8 +141,10 @@ declare global {
 }
 
 interface ImportMetaEnv {
-  readonly SUPABASE_URL: string;
-  readonly SUPABASE_KEY: string;
+  readonly PUBLIC_SUPABASE_URL: string;
+  readonly PUBLIC_SUPABASE_ANON_KEY: string;
+  readonly OPENROUTER_API_KEY: string;
+  // Add other environment variables here
 }
 
 interface ImportMeta {
@@ -82,4 +152,205 @@ interface ImportMeta {
 }
 ```
 
-This file augments the global types to include the Supabase client on the Astro `App.Locals` object, ensuring proper typing throughout your application.
+**Purpose:** 
+- Augments global types to include Supabase client in `Astro.locals`
+- Provides type-safety for environment variables
+- Ensures TypeScript autocomplete works throughout the application
+
+**Important:** 
+- Use `PUBLIC_` prefix for variables accessible in client-side code
+- Variables without `PUBLIC_` prefix are only available server-side
+
+## Environment Variables Setup
+
+Create a `.env` file in the project root:
+
+```env
+# Supabase Configuration
+PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+PUBLIC_SUPABASE_ANON_KEY=your-anon-key-from-supabase-start
+
+# OpenRouter API Key (for AI features)
+OPENROUTER_API_KEY=your-openrouter-api-key
+```
+
+**Getting Supabase credentials:**
+
+For **local development**:
+```bash
+npx supabase start
+# Copy the "anon key" from the output
+```
+
+For **production** (Supabase Cloud):
+1. Go to your Supabase project dashboard
+2. Settings → API
+3. Copy "Project URL" and "anon/public" key
+
+## Database Types (`/src/db/types.ts`)
+
+This file should contain TypeScript types generated from your database schema. It includes:
+
+- Table row types (`Profile`, `Flashcard`, `GenerationSession`)
+- Insert/Update types for each table
+- Function return types
+- Enum types
+- Complete `Database` interface for type-safe queries
+
+**Generate types from schema:**
+```bash
+# After running migrations
+npx supabase gen types typescript --local > src/db/types.ts
+```
+
+See the existing `/src/db/types.ts` for the complete structure.
+
+## Local Development Setup
+
+### 1. Start Supabase locally
+
+```bash
+# Make sure Docker Desktop is running first
+npx supabase start
+```
+
+This will:
+- Start local PostgreSQL database (port 54322)
+- Start Supabase Studio (port 54323)
+- Run migrations from `/supabase/migrations/`
+- Display API URL and keys
+
+### 2. Access Supabase Studio
+
+Open **http://127.0.0.1:54323** in your browser to:
+- View and edit data
+- Run SQL queries
+- Manage users
+- View API documentation
+
+### 3. Common commands
+
+```bash
+# Stop Supabase
+npx supabase stop
+
+# Reset database (WARNING: deletes all data)
+npx supabase db reset
+
+# Check status
+npx supabase status
+
+# View database URL and keys
+npx supabase status
+```
+
+## Usage Examples
+
+### In Astro Pages (Server-side)
+
+```astro
+---
+const { supabase } = Astro.locals;
+
+// Fetch data
+const { data: flashcards, error } = await supabase
+  .from('flashcards')
+  .select('*')
+  .eq('user_id', userId);
+
+// Using type-safe helpers
+import { flashcardsTable, getCurrentUser } from '../db/supabase';
+
+const user = await getCurrentUser();
+const { data } = await flashcardsTable()
+  .select('*')
+  .eq('user_id', user?.id);
+---
+
+<div>
+  {flashcards?.map(card => (
+    <div>{card.front}</div>
+  ))}
+</div>
+```
+
+### In API Routes
+
+```ts
+// src/pages/api/flashcards.ts
+import type { APIRoute } from 'astro';
+
+export const GET: APIRoute = async ({ locals }) => {
+  const { supabase } = locals;
+  
+  const { data, error } = await supabase
+    .from('flashcards')
+    .select('*');
+  
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
+  }
+  
+  return new Response(JSON.stringify(data), {
+    status: 200,
+  });
+};
+```
+
+### In React Components (Client-side)
+
+```tsx
+// For client-side, import the supabase client directly
+import { supabase } from '../db/supabase';
+
+export function MyComponent() {
+  const [cards, setCards] = useState([]);
+  
+  useEffect(() => {
+    async function loadCards() {
+      const { data } = await supabase
+        .from('flashcards')
+        .select('*');
+      setCards(data || []);
+    }
+    loadCards();
+  }, []);
+  
+  return <div>{/* render cards */}</div>;
+}
+```
+
+## Security Best Practices
+
+1. **Always use RLS (Row Level Security)** on all tables
+2. **Never expose service_role key** in client-side code
+3. **Use anon/public key** for client-side (respects RLS)
+4. **Validate user permissions** in RLS policies, not in application code
+5. **Use Zod schemas** to validate data exchanged with backend
+
+## Troubleshooting
+
+### "Missing Supabase environment variables" error
+- Check that `.env` file exists
+- Ensure variable names use `PUBLIC_` prefix
+- Restart dev server after changing `.env`
+
+### "Connection refused" when accessing database
+- Ensure Docker Desktop is running
+- Run `npx supabase start` to start local instance
+- Check `npx supabase status` for connection details
+
+### Types are out of sync with database
+```bash
+# Regenerate types after schema changes
+npx supabase gen types typescript --local > src/db/types.ts
+```
+
+## Related Files
+
+- `/supabase/config.toml` - Supabase CLI configuration
+- `/supabase/migrations/*.sql` - Database migrations
+- `/supabase/README.md` - Database documentation
+- `/supabase/QUICKSTART.md` - Quick setup guide

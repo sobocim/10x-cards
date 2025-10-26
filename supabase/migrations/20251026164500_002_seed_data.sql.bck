@@ -22,7 +22,7 @@
 -- 4. Email: test@10xcards.dev
 -- 5. Password: TestPassword123!
 -- 6. Copy the generated UUID
--- 7. Replace all instances of '00000000-0000-0000-0000-000000000000' below with your UUID
+-- 7. Replace all instances of '9496170f-8517-4bcc-bd0f-06cba32bde72' below with your UUID
 --
 -- OPTION B: Create user via SQL (requires service_role permissions)
 -- ------------------------------------------------------------------
@@ -45,8 +45,8 @@
 --     email_change_token_new,
 --     recovery_token
 -- ) VALUES (
---     '00000000-0000-0000-0000-000000000000',
---     '00000000-0000-0000-0000-000000000000', -- CHANGE THIS UUID!
+--     '9496170f-8517-4bcc-bd0f-06cba32bde72',
+--     '9496170f-8517-4bcc-bd0f-06cba32bde72', -- CHANGE THIS UUID!
 --     'authenticated',
 --     'authenticated',
 --     'test@10xcards.dev',
@@ -69,10 +69,10 @@
 -- ============================================================================
 
 -- Create profile for test user
--- IMPORTANT: Replace '00000000-0000-0000-0000-000000000000' with your test user UUID!
+-- IMPORTANT: Replace '9496170f-8517-4bcc-bd0f-06cba32bde72' with your test user UUID!
 DO $$
 DECLARE
-    test_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- CHANGE THIS!
+    test_user_id UUID := '9496170f-8517-4bcc-bd0f-06cba32bde72'; -- CHANGE THIS!
 BEGIN
     -- Check if user exists in auth.users
     IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = test_user_id) THEN
@@ -133,7 +133,7 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000000', -- CHANGE THIS!
+    '9496170f-8517-4bcc-bd0f-06cba32bde72', -- CHANGE THIS!
     'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance. It uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. PostgreSQL comes with many features aimed to help developers build applications, administrators to protect data integrity and build fault-tolerant environments, and help you manage your data no matter how big or small the dataset. In addition to being free and open source, PostgreSQL is highly extensible. For example, you can define your own data types, build out custom functions, even write code from different programming languages without recompiling your database! PostgreSQL has been proven to be highly scalable both in the sheer quantity of data it can manage and in the number of concurrent users it can accommodate. This is PostgreSQL,this is PostgreSQL, this is PostgreSQL',
     5,
     4,
@@ -162,7 +162,7 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     'React is a JavaScript library for building user interfaces. It is maintained by Meta and a community of individual developers and companies. React can be used as a base in the development of single-page, mobile, or server-rendered applications with frameworks like Next.js. However, React is only concerned with the user interface and rendering components to the DOM, so React applications often rely on libraries for routing and other client-side functionality. A key advantage of React is that it only re-renders the parts of the interface that have changed. This is done through a virtual DOM - a lightweight copy of the actual DOM. When state changes in a React component, React updates the virtual DOM and compares it with the previous version to determine what has changed. It then updates only those parts of the real DOM that need to be updated. This is React, this is React, this is React,  This is React, this is React, this is React,This is React, this is React, this is React, This is React, this is React, this is React,   ',
     0,
     0,
@@ -197,7 +197,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     '10000000-0000-0000-0000-000000000001',
     'What is PostgreSQL?',
     'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development, known for reliability, feature robustness, and performance.',
@@ -212,7 +212,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     '10000000-0000-0000-0000-000000000001',
     'What language does PostgreSQL use?',
     'PostgreSQL uses and extends the SQL language combined with many features that safely store and scale complicated data workloads.',
@@ -227,7 +227,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000003',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     '10000000-0000-0000-0000-000000000001',
     'Is PostgreSQL free and open source?',
     'Yes, PostgreSQL is free and open source. It is also highly extensible, allowing developers to define custom data types, functions, and write code from different programming languages.',
@@ -242,7 +242,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000004',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     '10000000-0000-0000-0000-000000000001',
     'What are the main benefits of PostgreSQL for developers?',
     'PostgreSQL helps developers build applications, administrators protect data integrity and build fault-tolerant environments, and manage data regardless of dataset size.',
@@ -274,7 +274,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000005',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     NULL,
     'What is the capital of France?',
     'Paris',
@@ -289,7 +289,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000006',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     NULL,
     'What is 2 + 2?',
     '4',
@@ -304,7 +304,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000007',
-    '00000000-0000-0000-0000-000000000000',
+    '9496170f-8517-4bcc-bd0f-06cba32bde72',
     NULL,
     'What does HTML stand for?',
     'HyperText Markup Language',
@@ -326,7 +326,7 @@ INSERT INTO flashcards (
 
 DO $$
 DECLARE
-    test_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- CHANGE THIS!
+    test_user_id UUID := '9496170f-8517-4bcc-bd0f-06cba32bde72'; -- CHANGE THIS!
     profile_count INTEGER;
     flashcard_count INTEGER;
     session_count INTEGER;
@@ -362,8 +362,8 @@ END $$;
 -- To view detailed stats, run these queries in Supabase SQL Editor:
 -- (Replace the UUID with your test user UUID)
 --
--- SELECT * FROM get_user_stats('00000000-0000-0000-0000-000000000000');
--- SELECT * FROM get_cards_due_for_review('00000000-0000-0000-0000-000000000000', 10);
+-- SELECT * FROM get_user_stats('9496170f-8517-4bcc-bd0f-06cba32bde72');
+-- SELECT * FROM get_cards_due_for_review('9496170f-8517-4bcc-bd0f-06cba32bde72', 10);
 
 -- ============================================================================
 -- END OF SEED DATA
