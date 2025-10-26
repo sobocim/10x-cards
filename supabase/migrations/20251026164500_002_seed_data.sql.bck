@@ -10,38 +10,108 @@
 -- It provides sample data for testing the application
 
 -- ============================================================================
--- IMPORTANT NOTES:
--- 1. This assumes you have created a test user in auth.users through Supabase
---    Auth interface or signup flow
--- 2. Replace the user_id values below with actual UUIDs from your test users
--- 3. The profile will be auto-created by trigger, but you can verify it exists
+-- IMPORTANT PREREQUISITES:
+-- ============================================================================
+-- Before running this seed data, you MUST create a test user first!
+--
+-- OPTION A: Create user through Supabase Auth (RECOMMENDED)
+-- --------------------------------------------------------
+-- 1. Go to: http://127.0.0.1:54321 (Supabase Studio)
+-- 2. Navigate to: Authentication > Users
+-- 3. Click "Add user" > "Create new user"
+-- 4. Email: test@10xcards.dev
+-- 5. Password: TestPassword123!
+-- 6. Copy the generated UUID
+-- 7. Replace all instances of '00000000-0000-0000-0000-000000000000' below with your UUID
+--
+-- OPTION B: Create user via SQL (requires service_role permissions)
+-- ------------------------------------------------------------------
+-- Run this in Supabase SQL Editor with service_role key:
+--
+-- INSERT INTO auth.users (
+--     instance_id,
+--     id,
+--     aud,
+--     role,
+--     email,
+--     encrypted_password,
+--     email_confirmed_at,
+--     raw_app_meta_data,
+--     raw_user_meta_data,
+--     created_at,
+--     updated_at,
+--     confirmation_token,
+--     email_change,
+--     email_change_token_new,
+--     recovery_token
+-- ) VALUES (
+--     '00000000-0000-0000-0000-000000000000',
+--     '00000000-0000-0000-0000-000000000000', -- CHANGE THIS UUID!
+--     'authenticated',
+--     'authenticated',
+--     'test@10xcards.dev',
+--     crypt('TestPassword123!', gen_salt('bf')),
+--     NOW(),
+--     '{"provider":"email","providers":["email"]}',
+--     '{"display_name":"Test User"}',
+--     NOW(),
+--     NOW(),
+--     '',
+--     '',
+--     '',
+--     ''
+-- ) ON CONFLICT (id) DO NOTHING;
+--
 -- ============================================================================
 
 -- ============================================================================
 -- 1. SAMPLE USER PROFILE
 -- ============================================================================
 
--- Example: Verify or insert test user profile
--- Replace '0536cb41-25e3-4618-80ce-0be081b3e90d' with actual test user UUID
-INSERT INTO profiles (
-    user_id,
-    display_name,
-    total_cards_created,
-    total_cards_generated_by_ai,
-    daily_generation_count,
-    last_generation_date,
-    created_at,
-    updated_at
-) VALUES (
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
-    'Sobocim.org Test User',
-    0, -- Will be updated by triggers
-    0, -- Will be updated by triggers
-    2,
-    CURRENT_DATE,
-    NOW(),
-    NOW()
-) ON CONFLICT (user_id) DO NOTHING;
+-- Create profile for test user
+-- IMPORTANT: Replace '00000000-0000-0000-0000-000000000000' with your test user UUID!
+DO $$
+DECLARE
+    test_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- CHANGE THIS!
+BEGIN
+    -- Check if user exists in auth.users
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = test_user_id) THEN
+        RAISE NOTICE '';
+        RAISE NOTICE '╔════════════════════════════════════════════════════════════════╗';
+        RAISE NOTICE '║  ERROR: Test user does not exist in auth.users!                ║';
+        RAISE NOTICE '║                                                                ║';
+        RAISE NOTICE '║  Please create a test user first. See instructions at top     ║';
+        RAISE NOTICE '║  of this file (002_seed_data.sql)                             ║';
+        RAISE NOTICE '║                                                                ║';
+        RAISE NOTICE '║  Current test_user_id: %                                      ║', test_user_id;
+        RAISE NOTICE '╚════════════════════════════════════════════════════════════════╝';
+        RAISE NOTICE '';
+        RAISE EXCEPTION 'Test user % does not exist. Create user first!', test_user_id;
+    END IF;
+    
+    -- Insert profile
+    INSERT INTO profiles (
+        user_id,
+        display_name,
+        total_cards_created,
+        total_cards_generated_by_ai,
+        daily_generation_count,
+        last_generation_date,
+        created_at,
+        updated_at
+    ) VALUES (
+        test_user_id,
+        'Test User (10xCards)',
+        0, -- Will be updated by triggers
+        0, -- Will be updated by triggers
+        2,
+        CURRENT_DATE,
+        NOW(),
+        NOW()
+    ) ON CONFLICT (user_id) DO NOTHING;
+    
+    RAISE NOTICE '✓ Profile created successfully for user: %', test_user_id;
+END $$;
 
 -- ============================================================================
 -- 2. SAMPLE GENERATION SESSIONS
@@ -63,7 +133,7 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000001',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000', -- CHANGE THIS!
     'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance. It uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. PostgreSQL comes with many features aimed to help developers build applications, administrators to protect data integrity and build fault-tolerant environments, and help you manage your data no matter how big or small the dataset. In addition to being free and open source, PostgreSQL is highly extensible. For example, you can define your own data types, build out custom functions, even write code from different programming languages without recompiling your database! PostgreSQL has been proven to be highly scalable both in the sheer quantity of data it can manage and in the number of concurrent users it can accommodate. This is PostgreSQL,this is PostgreSQL, this is PostgreSQL',
     5,
     4,
@@ -92,7 +162,7 @@ INSERT INTO generation_sessions (
     created_at
 ) VALUES (
     '10000000-0000-0000-0000-000000000002',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     'React is a JavaScript library for building user interfaces. It is maintained by Meta and a community of individual developers and companies. React can be used as a base in the development of single-page, mobile, or server-rendered applications with frameworks like Next.js. However, React is only concerned with the user interface and rendering components to the DOM, so React applications often rely on libraries for routing and other client-side functionality. A key advantage of React is that it only re-renders the parts of the interface that have changed. This is done through a virtual DOM - a lightweight copy of the actual DOM. When state changes in a React component, React updates the virtual DOM and compares it with the previous version to determine what has changed. It then updates only those parts of the real DOM that need to be updated. This is React, this is React, this is React,  This is React, this is React, this is React,This is React, this is React, this is React, This is React, this is React, this is React,   ',
     0,
     0,
@@ -127,7 +197,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000001',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     '10000000-0000-0000-0000-000000000001',
     'What is PostgreSQL?',
     'PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development, known for reliability, feature robustness, and performance.',
@@ -142,7 +212,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000002',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     '10000000-0000-0000-0000-000000000001',
     'What language does PostgreSQL use?',
     'PostgreSQL uses and extends the SQL language combined with many features that safely store and scale complicated data workloads.',
@@ -157,7 +227,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000003',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     '10000000-0000-0000-0000-000000000001',
     'Is PostgreSQL free and open source?',
     'Yes, PostgreSQL is free and open source. It is also highly extensible, allowing developers to define custom data types, functions, and write code from different programming languages.',
@@ -172,7 +242,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000004',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     '10000000-0000-0000-0000-000000000001',
     'What are the main benefits of PostgreSQL for developers?',
     'PostgreSQL helps developers build applications, administrators protect data integrity and build fault-tolerant environments, and manage data regardless of dataset size.',
@@ -204,7 +274,7 @@ INSERT INTO flashcards (
 ) VALUES
 (
     '20000000-0000-0000-0000-000000000005',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     NULL,
     'What is the capital of France?',
     'Paris',
@@ -219,7 +289,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000006',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     NULL,
     'What is 2 + 2?',
     '4',
@@ -234,7 +304,7 @@ INSERT INTO flashcards (
 ),
 (
     '20000000-0000-0000-0000-000000000007',
-    '0536cb41-25e3-4618-80ce-0be081b3e90d',
+    '00000000-0000-0000-0000-000000000000',
     NULL,
     'What does HTML stand for?',
     'HyperText Markup Language',
@@ -252,13 +322,48 @@ INSERT INTO flashcards (
 -- 4. VERIFICATION QUERIES
 -- ============================================================================
 
--- Uncomment these to verify the seed data was inserted correctly:
+-- Verify the seed data was inserted correctly:
 
--- SELECT COUNT(*) as profile_count FROM profiles;
--- SELECT COUNT(*) as flashcard_count FROM flashcards;
--- SELECT COUNT(*) as session_count FROM generation_sessions;
--- SELECT * FROM get_user_stats('0536cb41-25e3-4618-80ce-0be081b3e90d');
--- SELECT * FROM get_cards_due_for_review('0536cb41-25e3-4618-80ce-0be081b3e90d', 10);
+DO $$
+DECLARE
+    test_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- CHANGE THIS!
+    profile_count INTEGER;
+    flashcard_count INTEGER;
+    session_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO profile_count FROM profiles WHERE user_id = test_user_id;
+    SELECT COUNT(*) INTO flashcard_count FROM flashcards WHERE user_id = test_user_id;
+    SELECT COUNT(*) INTO session_count FROM generation_sessions WHERE user_id = test_user_id;
+    
+    RAISE NOTICE '';
+    RAISE NOTICE '╔════════════════════════════════════════════════════════════════╗';
+    RAISE NOTICE '║  SEED DATA VERIFICATION                                        ║';
+    RAISE NOTICE '╠════════════════════════════════════════════════════════════════╣';
+    RAISE NOTICE '║  Test User ID: %                                               ║', test_user_id;
+    RAISE NOTICE '║  Profiles:     %                                               ║', profile_count;
+    RAISE NOTICE '║  Flashcards:   %                                               ║', flashcard_count;
+    RAISE NOTICE '║  Sessions:     %                                               ║', session_count;
+    RAISE NOTICE '╚════════════════════════════════════════════════════════════════╝';
+    RAISE NOTICE '';
+    
+    IF profile_count = 0 THEN
+        RAISE WARNING 'No profile found for test user!';
+    END IF;
+    
+    IF flashcard_count = 0 THEN
+        RAISE WARNING 'No flashcards found for test user!';
+    END IF;
+    
+    IF session_count = 0 THEN
+        RAISE WARNING 'No generation sessions found for test user!';
+    END IF;
+END $$;
+
+-- To view detailed stats, run these queries in Supabase SQL Editor:
+-- (Replace the UUID with your test user UUID)
+--
+-- SELECT * FROM get_user_stats('00000000-0000-0000-0000-000000000000');
+-- SELECT * FROM get_cards_due_for_review('00000000-0000-0000-0000-000000000000', 10);
 
 -- ============================================================================
 -- END OF SEED DATA

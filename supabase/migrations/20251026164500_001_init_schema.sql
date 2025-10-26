@@ -83,11 +83,11 @@ CREATE TABLE generation_sessions (
 -- ============================================================================
 
 -- Profiles foreign keys
-ALTER TABLE profiles
-    ADD CONSTRAINT profiles_user_id_fkey 
-    FOREIGN KEY (user_id) 
-    REFERENCES auth.users(id) 
-    ON DELETE CASCADE;
+--ALTER TABLE profiles
+--   ADD CONSTRAINT profiles_user_id_fkey 
+--    FOREIGN KEY (user_id) 
+--    REFERENCES auth.users(id) 
+--    ON DELETE CASCADE;
 
 -- Flashcards foreign keys
 ALTER TABLE flashcards

@@ -37,14 +37,17 @@ Opcjonalne dane testowe dla środowisk dev/staging:
 - Przykładowy profil użytkownika
 - 2 sesje generowania (success + failed)
 - 7 przykładowych fiszek (4 AI-generated, 3 manual)
-- Query weryfikacyjne
+- Query weryfikacyjne z automatyczną weryfikacją
 
 **UWAGA**: ⚠️ **NIE URUCHAMIAĆ NA PRODUKCJI!**
 
 Przed uruchomieniem:
-1. Zamień UUID użytkownika na rzeczywisty UUID z twojego projektu
-2. Upewnij się, że profil użytkownika został utworzony ręcznie (patrz troubleshooting)
-3. Teksty w `input_text` mają min. 1000 znaków (już zaktualizowane)
+1. **Utwórz użytkownika testowego** przez Supabase Studio (http://127.0.0.1:54323)
+   - Email: `test@10xcards.dev`
+   - Password: `TestPassword123!`
+2. Skopiuj wygenerowany UUID użytkownika
+3. Zamień wszystkie wystąpienia `00000000-0000-0000-0000-000000000000` w pliku na rzeczywisty UUID
+4. Plik zawiera automatyczną weryfikację - jeśli użytkownik nie istnieje, wyświetli się czytelny błąd
 
 ## Jak uruchomić migracje
 
@@ -141,15 +144,20 @@ DROP FUNCTION IF EXISTS update_profile_stats_on_source_change CASCADE;
 
 ## Troubleshooting
 
-### Problem: "Failed to create user: Database error creating new user"
+### Problem: "insert or update on table profiles violates foreign key constraint"
 
-**Przyczyna**: Trigger `on_auth_user_created` został wyłączony, ponieważ Supabase nie pozwala na bezpośrednie triggery na `auth.users`.
+**Przyczyna**: Próba wstawienia profilu dla użytkownika, który nie istnieje w `auth.users`.
 
 **Rozwiązanie**: 
-- **Dla testów**: Ręcznie twórz profile przez SQL Editor po utworzeniu użytkownika
-- **Dla produkcji**: Twórz profile w kodzie aplikacji po rejestracji
+1. Najpierw utwórz użytkownika testowego przez Supabase Studio:
+   - Otwórz http://127.0.0.1:54323
+   - Przejdź do Authentication > Users > Add user
+   - Email: `test@10xcards.dev`, Password: `TestPassword123!`
+2. Skopiuj UUID użytkownika
+3. Zamień wszystkie `00000000-0000-0000-0000-000000000000` w `002_seed_data.sql` na rzeczywisty UUID
+4. Uruchom ponownie seed data
 
-Szczegółowe instrukcje: `.ai/troubleshooting-profile-creation.md`
+**Dla produkcji**: Profile są tworzone automatycznie w kodzie aplikacji po rejestracji użytkownika.
 
 ### Problem: RLS blokuje wszystkie zapytania
 
@@ -159,19 +167,14 @@ Szczegółowe instrukcje: `.ai/troubleshooting-profile-creation.md`
 SELECT auth.uid(); -- Powinno zwrócić UUID, nie NULL
 ```
 
-### Problem: Seed data się nie wstawia
+### Problem: Seed data się nie wstawia lub wstawia się częściowo
 
-**Rozwiązanie**: Zaktualizuj UUID użytkownika testowego w `002_seed_data.sql` na rzeczywisty UUID z `auth.users`:
+**Rozwiązanie**: Plik `002_seed_data.sql` zawiera automatyczną weryfikację. Sprawdź output w konsoli - jeśli użytkownik nie istnieje, zobaczysz czytelny komunikat błędu z instrukcjami.
 
+**Sprawdź czy użytkownik istnieje:**
 ```sql
-SELECT id, email FROM auth.users LIMIT 5;
+SELECT id, email FROM auth.users WHERE email = 'test@10xcards.dev';
 ```
-
-### Problem: "new row violates check constraint generation_sessions_input_text_check"
-
-**Przyczyna**: Teksty `input_text` w seed data są za krótkie (< 1000 znaków).
-
-**Rozwiązanie**: Użyj najnowszej wersji `002_seed_data.sql` z zaktualizowanymi tekstami (>1000 znaków). Zobacz `.ai/troubleshooting-seed-data.md` dla szczegółów.
 
 ## Następne kroki
 
